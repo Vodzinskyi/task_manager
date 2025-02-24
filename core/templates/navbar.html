@@ -7,10 +7,10 @@
         <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
             <div class="d-flex flex-column flex-lg-row gap-2 mt-3 mt-lg-0">
                 {% if user.is_authenticated %}
-                    <a class="btn btn-danger text-white p-2">Вийти</a>
+                    <a href="{% url 'account_logout' %}" class="btn btn-danger text-white p-2">Вийти</a>
                 {% else %}
-                    <a class="btn btn-outline-light p-2">Увійти</a>
-                    <a class="btn btn-primary text-white p-2">Зареєструватися</a>
+                    <a href="{% url 'account_login' %}" class="btn btn-outline-light p-2">Увійти</a>
+                    <a href="{% url 'account_signup' %}" class="btn btn-primary text-white p-2">Зареєструватися</a>
                 {% endif %}
             </div>
         </div>

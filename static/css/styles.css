@@ -1,3 +1,8 @@
+body {
+    background-color: #f0f4f9;
+    font-family: 'Arial', sans-serif;
+}
+
 .navbar-toggler.collapsed:focus {
     outline: none;
     box-shadow: none;

@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     "allauth",
     "allauth.account",
     "core",
+    "projects",
 ]
 
 AUTHENTICATION_BACKENDS = [

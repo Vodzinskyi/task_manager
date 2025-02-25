@@ -2,5 +2,14 @@
 
 {% block content %}
     {% include 'navbar.html' %}
-
+    {% if user.is_authenticated %}
+        {% include "projects.html" %}
+    {% else %}
+        <div class="d-flex justify-content-center">
+            <div class="col-12 col-md-8 col-lg-8 alert alert-info text-center mt-4" role="alert">
+                <i class="bi bi-info-circle"></i>
+                Для доступу до проєктів потрібно <a href="{% url 'account_login' %}" class="alert-link">Увійти</a>
+            </div>
+        </div>
+    {% endif %}
 {% endblock %}

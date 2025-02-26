@@ -5,11 +5,12 @@
              x-init="fetch('{% url 'projects' %}')
                      .then(res => res.json())
                      .then(data => projects = data)">
+
+            <!-- Project creation form -->
             <form hx-post="{% url 'projects' %}" hx-swap="none"
                   @htmx:after-request="if (event.detail.xhr.status === 201) { projects.push(JSON.parse(event.detail.xhr.response)); }"
                   hx-on::after-request="event.detail.successful && this.reset()"
                   class="d-flex flex-column flex-md-row gap-2 my-3">
-                {% csrf_token %}
                 <input type="text" name="name" class="form-control"
                        placeholder="Введіть назву проєкту" required
                        pattern="^(?!\s*$).+"
@@ -17,29 +18,57 @@
                 <button type="submit" class="btn btn-primary">Створити</button>
             </form>
 
+            <!-- List of projects -->
             <div class="d-flex flex-column gap-2">
                 <template x-for="(project, index) in projects" :key="project.id">
                     <div class="card shadow-sm border-0 p-0 flex-grow-1"
-                         x-data="{ expanded: true, editing: false }"
-                         @click.away="editing = false;"
+                         x-data="{ expanded: true, editing: false, tempName: project.name, originalName: project.name }"
+                         @click.away="
+                                    // When clicking outside, save changes if the name was modified
+                                    editing = false;
+                                    if (project.name.trim() !== tempName.trim()) {
+                                        originalName = project.name;
+                                        project.name = tempName;
+                                        htmx.ajax('PATCH', `/projects/${project.id}/`, {
+                                            values: { name: tempName },
+                                            swap: 'none' });}"
+                         x-init="
+                                // Listen for HTMX responses to handle failed updates
+                                document.addEventListener('htmx:afterRequest', (event) => {
+                                if (event.detail.requestConfig.verb === 'patch' && event.detail.requestConfig.path === `/projects/${project.id}/`) {
+                                    if (event.detail.xhr.status !== 200) {
+                                        project.name = originalName;
+                                        tempName = originalName;
+                                    }
+                                }})"
                          :id="'project-' + project.id">
                         <div class="card-body d-flex flex-column">
                             <div class="d-flex justify-content-between align-items-center">
+
+                                <!-- Editable project name field -->
                                 <template x-if="editing">
-                                    <input x-model="project.name" type="text" class="form-control m-0">
+                                    <input x-model="tempName" type="text" class="form-control m-0">
                                 </template>
+
+                                <!-- Display project name when not editing -->
                                 <template x-if="!editing">
                                     <h5 x-text="project.name" class="my-0 flex-grow-1 overflow-hidden text-truncate"
                                         style="line-height: 38px; max-width: 80%;"></h5>
                                 </template>
+
                                 <div class="d-flex gap-2 ms-auto">
+                                    <!-- Toggle expand/collapse -->
                                     <button @click="expanded = !expanded" class="btn btn-link p-0 mx-1">
                                         <i :class="expanded ? 'bi bi-chevron-up' : 'bi bi-chevron-down'"></i>
                                     </button>
+
+                                    <!-- Edit button -->
                                     <button @click.stop="editing = true"
                                             class="btn btn-link p-0 mx-1">
                                         <i class="bi bi-pencil"></i>
                                     </button>
+
+                                    <!-- Delete button -->
                                     <button @click="htmx.ajax('DELETE', `/projects/${project.id}/`, {
                                                     target: `#project-${project.id}`,
                                                     swap: 'outerHTML' })"
@@ -48,6 +77,8 @@
                                     </button>
                                 </div>
                             </div>
+
+                            <!-- Expandable content section -->
                             <div x-show="expanded" x-collapse class="mt-2">
                             </div>
                         </div>

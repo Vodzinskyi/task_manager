@@ -1,5 +1,5 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http import JsonResponse, HttpResponse, HttpResponseForbidden
+from django.http import JsonResponse, HttpResponse, HttpResponseForbidden, QueryDict
 from django.shortcuts import get_object_or_404
 from django.views import View
 
@@ -34,7 +34,23 @@ class ProjectDetailView(LoginRequiredMixin, View):
     """Handles operations on a specific project."""
 
     def patch(self, request, pk):
-        pass
+        """Update a project name"""
+        project = get_object_or_404(Project, id=pk)
+        if project.owner != request.user:
+            return HttpResponseForbidden()
+        data = QueryDict(request.body.decode())
+        name = data.get("name").strip()
+        if not name:
+            return JsonResponse(
+                {"error": "The project name cannot be empty"}, status=400
+            )
+        if name == project.name:
+            return JsonResponse(
+                {"message": "The project name is already current"}, status=200
+            )
+        project.name = name
+        project.save()
+        return HttpResponse(status=200)
 
     def delete(self, request, pk):
         """Deletes a project if the requesting user is the owner."""
@@ -42,4 +58,4 @@ class ProjectDetailView(LoginRequiredMixin, View):
         if project.owner != request.user:
             return HttpResponseForbidden()
         project.delete()
-        return HttpResponse(status=204)
+        return HttpResponse(status=200)

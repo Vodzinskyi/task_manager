@@ -1,4 +1,5 @@
 import uuid
+from urllib.parse import urlencode
 
 from django.test import TestCase
 from django.urls import reverse
@@ -51,10 +52,42 @@ class ProjectDetailViewTests(TestCase):
         self.url1 = reverse("project_detail", kwargs={"pk": self.project1.id})
         self.url2 = reverse("project_detail", kwargs={"pk": self.project2.id})
 
+    def test_patch_project_success(self):
+        """Test PATCH successfully updates the project name"""
+        response = self.client.patch(
+            self.url1,
+            data=urlencode({"name": "Updated Project"}),
+            content_type="application/x-www-form-urlencoded",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.project1.refresh_from_db()
+        self.assertEqual(self.project1.name, "Updated Project")
+
+    def test_patch_project_empty_name(self):
+        """Test PATCH returns 400 if the name is empty"""
+        response = self.client.patch(
+            self.url1,
+            data=urlencode({"name": ""}),
+            content_type="application/x-www-form-urlencoded",
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()["error"], "The project name cannot be empty")
+
+    def test_patch_project_not_owner(self):
+        """Test PATCH returns 403 if user is not the owner"""
+        response = self.client.patch(
+            self.url2,
+            data={"name": "Hacked Name"},
+            content_type="application/x-www-form-urlencoded",
+        )
+        self.assertEqual(response.status_code, 403)
+        self.project2.refresh_from_db()
+        self.assertNotEqual(self.project2.name, "Hacked Name")
+
     def test_delete_project_success(self):
         """Test DELETE method successfully deletes the project"""
         response = self.client.delete(self.url1)
-        self.assertEqual(response.status_code, 204)
+        self.assertEqual(response.status_code, 200)
         self.assertFalse(Project.objects.filter(id=self.project1.id).exists())
 
     def test_delete_project_not_owner(self):

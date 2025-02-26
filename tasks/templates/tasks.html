@@ -1,0 +1,61 @@
+<div class="d-flex justify-content-center w-100 flex-column"
+     x-data="{ tasks: [], taskName: '' }">
+
+    <!-- Task creation form -->
+    <form @submit.prevent="tasks.push({id: Date.now(), name: taskName }); taskName = '';"
+          class="d-flex flex-grow-1 flex-column flex-md-row gap-2 my-3 mx-0">
+        <input type="text" x-model="taskName" name="taskName" class="form-control"
+               placeholder="Введіть назву завдання" required
+               pattern="^(?!\s*$).+"
+               oninvalid="this.setCustomValidity('Введіть коректне ім\'я завдання');">
+        <button type="submit" class="btn btn-primary">Створити</button>
+    </form>
+
+    <!-- List of tasks -->
+    <ul class="list-group list-group-flush">
+        <template x-for="(task, index) in tasks" :key="task.id">
+            <li class="list-group-item" x-data="{ editing: false }">
+                <div class="d-flex justify-content-between align-items-center">
+
+                    <!-- "Done" checkbox -->
+                    <input class="form-check-input me-3" type="checkbox" value="">
+
+                    <!-- Editable task name field -->
+                    <template x-if="editing">
+                        <input type="text" class="form-control m-0">
+                    </template>
+
+                    <!-- Display task name when not editing -->
+                    <template x-if="!editing">
+                        <h6 x-text="task.name" class="my-0 flex-grow-1 overflow-hidden text-truncate"
+                            style="line-height: 38px; max-width: 80%;"></h6>
+                    </template>
+
+                    <div class="d-flex gap-2 ms-auto">
+
+                        <!-- Position buttons -->
+                        <div class="btn-group-vertical btn-group-sm" style="height: 38px;">
+                            <button type="button" class="btn btn-outline-light text-secondary py-0 border-0">
+                                <i class="bi bi-chevron-up"></i>
+                            </button>
+                            <button type="button" class="btn btn-outline-light text-secondary py-0 border-0">
+                                <i class="bi bi-chevron-down"></i>
+                            </button>
+                        </div>
+
+
+                        <!-- Edit button -->
+                        <button class="btn btn-link p-0 mx-1" @click="editing = !editing;">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+
+                        <!-- Delete button -->
+                        <button class="btn btn-link p-0 mx-1">
+                            <i class="bi bi-trash text-danger"></i>
+                        </button>
+                    </div>
+                </div>
+            </li>
+        </template>
+    </ul>
+</div>

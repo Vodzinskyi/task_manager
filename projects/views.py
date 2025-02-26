@@ -1,5 +1,6 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse, HttpResponseForbidden
+from django.shortcuts import get_object_or_404
 from django.views import View
 
 from projects.models import Project
@@ -27,3 +28,18 @@ class ProjectsView(LoginRequiredMixin, View):
             )
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=400)
+
+
+class ProjectDetailView(LoginRequiredMixin, View):
+    """Handles operations on a specific project."""
+
+    def patch(self, request, pk):
+        pass
+
+    def delete(self, request, pk):
+        """Deletes a project if the requesting user is the owner."""
+        project = get_object_or_404(Project, id=pk)
+        if project.owner != request.user:
+            return HttpResponseForbidden()
+        project.delete()
+        return HttpResponse(status=204)

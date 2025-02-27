@@ -25,7 +25,26 @@
     <!-- List of tasks -->
     <ul class="list-group list-group-flush">
         <template x-for="(task, index) in tasks" :key="task.id">
-            <li class="list-group-item" x-data="{ editing: false }">
+            <li class="list-group-item"
+                x-data="{ editing: false, tempTaskName: task.name, originalTaskName: task.name }"
+                @click.away="
+                    // When clicking outside, save changes if the name was modified
+                    editing = false;
+                    if (task.name.trim() !== tempTaskName.trim()) {
+                        originalTaskName = task.name;
+                        task.name = tempTaskName;
+                        htmx.ajax('PATCH', `/projects/${project.id}/tasks/${task.id}/`, {
+                            values: { name: tempTaskName },
+                            swap: 'none' });}"
+                x-init="
+                    // Listen for HTMX responses to handle failed updates
+                    document.addEventListener('htmx:afterRequest', (event) => {
+                    if (event.detail.requestConfig.verb === 'patch' && event.detail.requestConfig.path === `/projects/${project.id}/tasks/${task.id}/`) {
+                        if (event.detail.xhr.status !== 200) {
+                            task.name = originalTaskName;
+                            tempTaskName = originalTaskName;
+                        }
+                    }})">
                 <div class="d-flex justify-content-between align-items-center">
 
                     <!-- "Done" checkbox -->
@@ -33,7 +52,7 @@
 
                     <!-- Editable task name field -->
                     <template x-if="editing">
-                        <input type="text" class="form-control m-0">
+                        <input x-model="tempTaskName" type="text" class="form-control m-0">
                     </template>
 
                     <!-- Display task name when not editing -->
@@ -55,7 +74,7 @@
                         </div>
 
                         <!-- Edit button -->
-                        <button class="btn btn-link p-0 mx-1" @click="editing = !editing;">
+                        <button class="btn btn-link p-0 mx-1" @click="editing = true;">
                             <i class="bi bi-pencil"></i>
                         </button>
 

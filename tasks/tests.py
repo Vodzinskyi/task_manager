@@ -1,6 +1,7 @@
 import uuid
 
 from django.core.exceptions import PermissionDenied
+from django.http import QueryDict
 from django.test import TestCase
 from django.urls import reverse
 from django.contrib.auth import get_user_model
@@ -94,3 +95,24 @@ class TaskServiceDeleteTest(TestCase):
         """Deleting a non-existent task raises an error."""
         with self.assertRaisesMessage(Exception, "No Task matches the given query."):
             TaskService.delete_task(self.user1, uuid.uuid4(), self.project.id)
+
+    def test_update_task_permission_denied(self):
+        """Non-owner cannot update the task name."""
+        data = QueryDict("name=Unauthorized Update")
+        with self.assertRaises(PermissionDenied):
+            TaskService.update_task(self.user2, self.task.id, self.project.id, data)
+
+    def test_update_task_name_success(self):
+        """Owner can update task name."""
+        data = QueryDict("name=Updated Task Name")
+        TaskService.update_task(self.user1, self.task.id, self.project.id, data)
+        self.task.refresh_from_db()
+        self.assertEqual(self.task.name, "Updated Task Name")
+
+    def test_update_task_name_empty(self):
+        """Cannot update task with empty name."""
+        data = QueryDict("name=")
+        with self.assertRaises(ValueError):
+            TaskService.update_task(self.user1, self.task.id, self.project.id, data)
+        self.task.refresh_from_db()
+        self.assertEqual(self.task.name, "Test Task")

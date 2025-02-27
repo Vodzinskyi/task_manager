@@ -1,6 +1,12 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
-from django.http import JsonResponse, HttpResponseForbidden, HttpResponse
+from django.http import (
+    JsonResponse,
+    HttpResponseForbidden,
+    HttpResponse,
+    QueryDict,
+    HttpResponseBadRequest,
+)
 from django.shortcuts import get_object_or_404
 from django.views import View
 
@@ -43,15 +49,23 @@ class TasksView(LoginRequiredMixin, View):
 
 
 class TaskDetailView(LoginRequiredMixin, View):
+    """Handles operations on a specific task."""
+
     def patch(self, request, pk, project_id):
-        pass
+        """Updates specified fields of a task."""
+        try:
+            data = QueryDict(request.body.decode())
+            TaskService.update_task(request.user, pk, project_id, data)
+            return HttpResponse(status=200)
+        except ValueError as e:
+            return HttpResponseBadRequest(str(e))
+        except PermissionDenied as e:
+            return HttpResponseForbidden(str(e))
 
     def delete(self, request, pk, project_id):
         """Deletes a task if the requesting user is the owner of the project."""
         try:
             TaskService.delete_task(request.user, pk, project_id)
             return HttpResponse(status=204)
-        except PermissionDenied:
-            return HttpResponseForbidden(
-                "You don't have permission to modify this project."
-            )
+        except PermissionDenied as e:
+            return HttpResponseForbidden(str(e))

@@ -26,7 +26,7 @@ class TasksView(LoginRequiredMixin, View):
                 "You don't have permission to access this project."
             )
 
-        tasks = Task.objects.filter(project=project).values("id", "name")
+        tasks = Task.objects.filter(project=project).values()
         return JsonResponse(list(tasks), safe=False)
 
     def post(self, request, project_id):

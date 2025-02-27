@@ -48,7 +48,12 @@
                 <div class="d-flex justify-content-between align-items-center">
 
                     <!-- "Done" checkbox -->
-                    <input class="form-check-input me-3" type="checkbox" value="">
+                    <input class="form-check-input me-3" type="checkbox"
+                           x-init="htmx.process($el)"
+                           :hx-patch="`/projects/${project.id}/tasks/${task.id}/`"
+                           :hx-vals='JSON.stringify({"is_completed": task.is_completed})'
+                           @click="task.is_completed = !task.is_completed"
+                           :checked="task.is_completed">
 
                     <!-- Editable task name field -->
                     <template x-if="editing">

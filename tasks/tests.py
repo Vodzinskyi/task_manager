@@ -116,3 +116,10 @@ class TaskServiceDeleteTest(TestCase):
             TaskService.update_task(self.user1, self.task.id, self.project.id, data)
         self.task.refresh_from_db()
         self.assertEqual(self.task.name, "Test Task")
+
+    def test_update_task_is_completed(self):
+        """Owner can update task completion status."""
+        data = QueryDict("is_completed=true")
+        TaskService.update_task(self.user1, self.task.id, self.project.id, data)
+        self.task.refresh_from_db()
+        self.assertTrue(self.task.is_completed)

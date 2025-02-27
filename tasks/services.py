@@ -17,7 +17,7 @@ class TaskService:
 
         allowed_fields = {
             "name": TaskService._update_name,
-            # "is_completed": TaskService._update_is_completed,
+            "is_completed": TaskService._update_is_completed,
             # "deadline": TaskService._update_deadline,
             # "position": TaskService._update_position
         }
@@ -47,3 +47,10 @@ class TaskService:
         if not name:
             raise ValueError("Task name is required.")
         task.name = name
+
+    @staticmethod
+    def _update_is_completed(task, data):
+        is_completed = {"true": True, "false": False}.get(
+            data.get("is_completed").lower(), None
+        )
+        task.is_completed = is_completed

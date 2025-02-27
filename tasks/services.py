@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django.db.models import Max
 from django.forms import model_to_dict
 from django.shortcuts import get_object_or_404
@@ -45,7 +47,7 @@ class TaskService:
         allowed_fields = {
             "name": TaskService._update_name,
             "is_completed": TaskService._update_is_completed,
-            # "deadline": TaskService._update_deadline,
+            "deadline": TaskService._update_deadline,
             "priority": TaskService._update_priority,
         }
 
@@ -94,3 +96,14 @@ class TaskService:
         """Updates the task priority"""
         priority = data.get("priority", 0)
         task.priority = priority
+
+    @staticmethod
+    def _update_deadline(task, data):
+        """Updates the task deadline"""
+        try:
+            deadline = datetime.strptime(data.get("deadline", None), "%Y-%m-%d %H:%M")
+            task.deadline = deadline
+        except ValueError:
+            raise ValueError(
+                "Invalid deadline format. Expected format: YYYY-MM-DD HH:MM"
+            )

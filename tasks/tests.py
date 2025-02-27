@@ -1,10 +1,13 @@
 import uuid
+from datetime import datetime
 
 from django.core.exceptions import PermissionDenied
 from django.http import QueryDict
 from django.test import TestCase
 from django.urls import reverse
 from django.contrib.auth import get_user_model
+from django.utils import timezone
+
 from projects.models import Project
 from tasks.models import Task
 from tasks.services import TaskService
@@ -136,3 +139,21 @@ class TaskServiceDeleteTest(TestCase):
         TaskService.update_task(self.user1, self.task.id, self.project.id, data)
         self.task.refresh_from_db()
         self.assertEqual(self.task.priority, new_priority)
+
+    def test_update_task_deadline(self):
+        """Test that the task deadline is updated correctly."""
+        new_deadline = "2025-02-25 12:00"
+        data = {"deadline": new_deadline}
+        TaskService.update_task(self.user1, self.task.id, self.project.id, data)
+        updated_task = Task.objects.get(id=self.task.id)
+        expected_deadline = timezone.make_aware(
+            datetime.strptime(new_deadline, "%Y-%m-%d %H:%M")
+        )
+        self.assertEqual(updated_task.deadline, expected_deadline)
+
+    def test_update_task_deadline_invalid_format(self):
+        """Test that a ValueError is raised when the deadline format is invalid."""
+        invalid_deadline = "25-02-2025 12:00"
+        data = {"deadline": invalid_deadline}
+        with self.assertRaises(ValueError):
+            TaskService.update_task(self.user1, self.task.id, self.project.id, data)

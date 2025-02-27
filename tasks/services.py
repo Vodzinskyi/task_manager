@@ -1,3 +1,5 @@
+from django.db.models import Max
+from django.forms import model_to_dict
 from django.shortcuts import get_object_or_404
 from django.core.exceptions import PermissionDenied
 
@@ -7,11 +9,34 @@ from tasks.models import Task
 
 class TaskService:
     @staticmethod
+    def create_task(user, name, project_id):
+        """Creates a new task"""
+        if not name:
+            raise ValueError("Task name is required.")
+        project = get_object_or_404(Project, id=project_id)
+        TaskService._check_project_owner(user, project)
+
+        max_priority = Task.objects.filter(project=project).aggregate(
+            max_priority=Max("priority")
+        )["max_priority"]
+        new_priority = (max_priority or 0) + 1
+
+        new_task = Task.objects.create(
+            name=name, project=project, priority=new_priority
+        )
+
+        response = model_to_dict(
+            new_task, fields=[field.name for field in Task._meta.fields]
+        )
+        response["id"] = str(new_task.id)
+
+        return response
+
+    @staticmethod
     def update_task(user, task_id, project_id, data):
         """Updates task if the user is the owner of the project."""
         project = get_object_or_404(Project, id=project_id)
-        if project.owner != user:
-            raise PermissionDenied("You don't have permission to update this task.")
+        TaskService._check_project_owner(user, project)
 
         task = get_object_or_404(Task, id=task_id, project=project)
 
@@ -35,11 +60,16 @@ class TaskService:
     def delete_task(user, task_id, project_id):
         """Deletes a task if the user is the owner of the project."""
         project = get_object_or_404(Project, id=project_id)
-        if project.owner != user:
-            raise PermissionDenied("You don't have permission to delete this task.")
+        TaskService._check_project_owner(user, project)
 
         task = get_object_or_404(Task, id=task_id, project=project)
         task.delete()
+
+    @staticmethod
+    def _check_project_owner(user, project):
+        """Check if the user is the owner of the project."""
+        if project.owner != user:
+            raise PermissionDenied("You don't have permission to modify this project.")
 
     @staticmethod
     def _update_name(task, data):

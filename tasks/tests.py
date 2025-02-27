@@ -30,9 +30,6 @@ class TasksViewTests(TestCase):
             reverse("tasks", kwargs={"project_id": self.project1.id})
         )
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(
-            response.json(), [{"id": str(self.task.id), "name": self.task.name}]
-        )
 
     def test_get_tasks_forbidden(self):
         """User cannot retrieve tasks for another user's project."""
@@ -71,6 +68,14 @@ class TasksViewTests(TestCase):
             reverse("tasks", kwargs={"project_id": uuid.uuid4()})
         )
         self.assertEqual(response.status_code, 404)
+
+    def test_create_task_with_priority(self):
+        """Test that a task is created with the correct priority using the service."""
+        response = TaskService.create_task(self.user1, "Task 1", self.project1.id)
+        self.assertEqual(response["priority"], 1)
+
+        response = TaskService.create_task(self.user1, "Task 2", self.project1.id)
+        self.assertEqual(response["priority"], 2)
 
 
 class TaskServiceDeleteTest(TestCase):

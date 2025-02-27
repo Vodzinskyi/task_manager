@@ -31,19 +31,14 @@ class TasksView(LoginRequiredMixin, View):
 
     def post(self, request, project_id):
         """Creates a new task if the provided name is valid."""
-        name = request.POST.get("name", "").strip()
-        if not name:
-            return JsonResponse({"error": "The task name cannot be empty"}, status=400)
-
-        project = get_object_or_404(Project, id=project_id)
-        if project.owner != request.user:
-            return HttpResponseForbidden(
-                "You don't have permission to modify this project."
-            )
-
         try:
-            new_task = Task.objects.create(name=name, project=project)
-            return JsonResponse({"id": new_task.id, "name": new_task.name}, status=201)
+            name = request.POST.get("name", "").strip()
+            response = TaskService.create_task(request.user, name, project_id)
+            return JsonResponse(response, status=201)
+        except ValueError as e:
+            return HttpResponseBadRequest(str(e))
+        except PermissionDenied as e:
+            return HttpResponseForbidden(str(e))
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=400)
 

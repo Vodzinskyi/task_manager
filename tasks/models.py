@@ -12,7 +12,7 @@ class Task(models.Model):
     name = models.CharField(max_length=255)
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="tasks")
     is_completed = models.BooleanField(default=False)
-    deadline = models.DateTimeField()
+    deadline = models.DateTimeField(null=True, blank=True)
     priority = models.IntegerField(default=0)
 
     def __str__(self):

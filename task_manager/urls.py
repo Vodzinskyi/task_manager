@@ -25,4 +25,5 @@ urlpatterns = [
     path("accounts/", include("allauth.urls")),
     path("", core.views.home, name="home"),
     path("projects/", include("projects.urls")),
+    path("projects/<uuid:project_id>/tasks/", include("tasks.urls")),
 ]

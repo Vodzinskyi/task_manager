@@ -1,10 +1,21 @@
 <div class="d-flex justify-content-center w-100 flex-column"
-     x-data="{ tasks: [], taskName: '' }">
+     x-data="{ tasks: [] }"
+     x-init="fetch(`/projects/${project.id}/tasks/`)
+                     .then(res => res.json())
+                     .then(data => {
+                         tasks = data;
+                         htmx.process($el);
+                     })">
 
     <!-- Task creation form -->
-    <form @submit.prevent="tasks.push({id: Date.now(), name: taskName }); taskName = '';"
+    <form :hx-post="`/projects/${project.id}/tasks/`" hx-swap="none" hx-trigger="submit"
+          @htmx:after-request="if (event.detail.xhr.status === 201) {
+               tasks.push(JSON.parse(event.detail.xhr.response));
+               htmx.process($el);
+          }"
+          hx-on::after-request="event.detail.successful && this.reset()"
           class="d-flex flex-grow-1 flex-column flex-md-row gap-2 my-3 mx-0">
-        <input type="text" x-model="taskName" name="taskName" class="form-control"
+        <input type="text" name="name" class="form-control"
                placeholder="Введіть назву завдання" required
                pattern="^(?!\s*$).+"
                oninvalid="this.setCustomValidity('Введіть коректне ім\'я завдання');">

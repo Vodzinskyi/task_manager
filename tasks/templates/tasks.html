@@ -54,14 +54,17 @@
                             </button>
                         </div>
 
-
                         <!-- Edit button -->
                         <button class="btn btn-link p-0 mx-1" @click="editing = !editing;">
                             <i class="bi bi-pencil"></i>
                         </button>
 
                         <!-- Delete button -->
-                        <button class="btn btn-link p-0 mx-1">
+                        <button class="btn btn-link p-0 mx-1" x-init="htmx.process($el)"
+                                :hx-delete="`/projects/${project.id}/tasks/${task.id}/`"
+                                @htmx:after-request="if (event.detail.successful) {
+                                    tasks.splice(index, 1);
+                                }">
                             <i class="bi bi-trash text-danger"></i>
                         </button>
                     </div>

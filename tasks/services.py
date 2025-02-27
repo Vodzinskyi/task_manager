@@ -8,6 +8,8 @@ from tasks.models import Task
 
 
 class TaskService:
+    """Service class for handling task-related operations."""
+
     @staticmethod
     def create_task(user, name, project_id):
         """Creates a new task"""
@@ -44,7 +46,7 @@ class TaskService:
             "name": TaskService._update_name,
             "is_completed": TaskService._update_is_completed,
             # "deadline": TaskService._update_deadline,
-            # "position": TaskService._update_position
+            "priority": TaskService._update_priority,
         }
 
         updated = False
@@ -73,6 +75,7 @@ class TaskService:
 
     @staticmethod
     def _update_name(task, data):
+        """Updates the task name"""
         name = data.get("name", "").strip()
         if not name:
             raise ValueError("Task name is required.")
@@ -80,7 +83,14 @@ class TaskService:
 
     @staticmethod
     def _update_is_completed(task, data):
+        """Updates the task completion status"""
         is_completed = {"true": True, "false": False}.get(
             data.get("is_completed").lower(), None
         )
         task.is_completed = is_completed
+
+    @staticmethod
+    def _update_priority(task, data):
+        """Updates the task priority"""
+        priority = data.get("priority", 0)
+        task.priority = priority

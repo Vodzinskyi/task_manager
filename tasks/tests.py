@@ -128,3 +128,11 @@ class TaskServiceDeleteTest(TestCase):
         TaskService.update_task(self.user1, self.task.id, self.project.id, data)
         self.task.refresh_from_db()
         self.assertTrue(self.task.is_completed)
+
+    def test_update_task_priority_success(self):
+        """Task priority is updated successfully."""
+        new_priority = 5
+        data = {"priority": new_priority}
+        TaskService.update_task(self.user1, self.task.id, self.project.id, data)
+        self.task.refresh_from_db()
+        self.assertEqual(self.task.priority, new_priority)

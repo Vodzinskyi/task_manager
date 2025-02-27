@@ -1,9 +1,8 @@
 <div class="d-flex justify-content-center w-100 flex-column"
-     x-data="{ tasks: [] }"
-     x-init="fetch(`/projects/${project.id}/tasks/`)
+     x-data="taskData(project.id)" x-init="fetch(`/projects/${project.id}/tasks/`)
                      .then(res => res.json())
                      .then(data => {
-                         tasks = data;
+                         tasks = data.sort((a, b) => a.priority - b.priority);
                          htmx.process($el);
                      })">
 
@@ -70,10 +69,12 @@
 
                         <!-- Position buttons -->
                         <div class="btn-group-vertical btn-group-sm" style="height: 38px;">
-                            <button type="button" class="btn btn-outline-light text-secondary py-0 border-0">
+                            <button type="button" class="btn btn-outline-light text-secondary py-0 border-0"
+                                    @click="moveTask(index, -1)">
                                 <i class="bi bi-chevron-up"></i>
                             </button>
-                            <button type="button" class="btn btn-outline-light text-secondary py-0 border-0">
+                            <button type="button" class="btn btn-outline-light text-secondary py-0 border-0"
+                                    @click="moveTask(index, 1)">
                                 <i class="bi bi-chevron-down"></i>
                             </button>
                         </div>

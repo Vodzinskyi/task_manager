@@ -11,8 +11,8 @@
           @htmx:after-request="if (event.detail.xhr.status === 201) {
                tasks.push(JSON.parse(event.detail.xhr.response));
                htmx.process($el);
+               $event.target.reset();
           }"
-          hx-on::after-request="event.detail.successful && this.reset()"
           class="d-flex flex-grow-1 flex-column flex-md-row gap-2 my-3 mx-0">
         <input type="text" name="name" class="form-control"
                placeholder="Введіть назву завдання" required
@@ -61,8 +61,8 @@
 
                     <!-- Display task name when not editing -->
                     <template x-if="!editing">
-                        <div class="d-flex flex-column" style="max-width: 80%; line-height: 1.2;">
-                            <h6 x-text="task.name" class="my-0 overflow-hidden text-truncate"></h6>
+                        <div class="d-flex flex-column overflow-hidden">
+                            <h6 x-text="task.name" class="my-0 overflow-hidden text-truncate" style="max-width: 100%; line-height: 1.2;"></h6>
                             <small x-text="task.deadline ? new Date(task.deadline).toLocaleString('uk-UA', {
                                            day: '2-digit',
                                            month: 'long',

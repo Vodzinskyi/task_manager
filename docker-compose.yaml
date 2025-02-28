@@ -12,5 +12,19 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+  django:
+    build: .
+    container_name: django-container
+    restart: always
+    depends_on:
+      - postgres
+    environment:
+      - .env
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    working_dir: /app
+
 volumes:
   postgres_data:

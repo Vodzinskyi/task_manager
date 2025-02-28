@@ -2,7 +2,7 @@
 
 .ruff_cache/
 
-.env
+#.env
 /.venv/
 
 __pycache__/

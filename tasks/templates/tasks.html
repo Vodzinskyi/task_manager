@@ -18,14 +18,18 @@
                placeholder="Введіть назву завдання" required
                pattern="^(?!\s*$).+"
                oninvalid="this.setCustomValidity('Введіть коректне ім\'я завдання');">
-        <button type="submit" class="btn btn-primary">Створити</button>
+        <button type="submit" class="btn btn-success">Створити</button>
     </form>
 
     <!-- List of tasks -->
     <ul class="list-group list-group-flush">
         <template x-for="(task, index) in tasks" :key="task.id">
             <li class="list-group-item"
-                x-data="{ editing: false, tempTaskName: task.name, originalTaskName: task.name }"
+                x-data="{ editing: false, tempTaskName: task.name, originalTaskName: task.name, showButtons: false,
+                isMobile: window.matchMedia('(max-width: 991px)').matches}"
+                x-init="window.addEventListener('resize', () => isMobile = window.matchMedia('(max-width: 992px)').matches)"
+                @mouseenter="showButtons = true"
+                @mouseleave="showButtons = false"
                 @click.away="
                     // When clicking outside, save changes if the name was modified
                     editing = false;
@@ -44,7 +48,7 @@
                             tempTaskName = originalTaskName;
                         }
                     }})">
-                <div class="d-flex justify-content-between align-items-center">
+                <div class="d-flex justify-content-between align-items-center" style="height: 38px">
 
                     <!-- "Done" checkbox -->
                     <input class="form-check-input me-3" type="checkbox"
@@ -62,15 +66,16 @@
                     <!-- Display task name when not editing -->
                     <template x-if="!editing">
                         <div class="d-flex flex-column overflow-hidden">
-                            <h6 x-text="task.name" class="my-0 overflow-hidden text-truncate" style="max-width: 100%; line-height: 1.2;"></h6>
+                            <h6 x-text="task.name" class="my-0 overflow-hidden text-truncate"
+                                style="max-width: 100%; line-height: 1.2;"></h6>
                             <small x-text="task.deadline ? new Date(task.deadline).toLocaleString('uk-UA', {
                                            day: '2-digit',
                                            month: 'long',
                                            year: 'numeric',
                                            hour: '2-digit',
                                            minute: '2-digit'}) : ''"
-                                    class="text-muted"
-                                    style="font-size: 0.75rem;">
+                                   class="text-muted"
+                                   style="font-size: 0.75rem;">
                             </small>
                         </div>
                     </template>
@@ -78,7 +83,7 @@
                     <div class="d-flex gap-2 ms-auto">
 
                         <!-- Position buttons -->
-                        <div class="btn-group-vertical btn-group-sm" style="height: 38px;">
+                        <div x-show="showButtons || isMobile" class="btn-group-vertical btn-group-sm" style="height: 38px;">
                             <button type="button" class="btn btn-outline-light text-secondary py-0 border-0"
                                     @click="moveTask(index, -1)">
                                 <i class="bi bi-chevron-up"></i>
@@ -106,19 +111,19 @@
                                          }
                                      });
                                  });">
-                            <button class="btn btn-link p-0 mx-1" @click="$refs.dateTimeInput._flatpickr.open()">
+                            <button x-show="showButtons || isMobile" class="btn btn-link p-0 mx-1" @click="$refs.dateTimeInput._flatpickr.open()">
                                 <i class="bi bi-calendar-date"></i>
                             </button>
                             <input type="text" x-ref="dateTimeInput" class="visually-hidden">
                         </div>
 
                         <!-- Edit button -->
-                        <button class="btn btn-link p-0 mx-1" @click="editing = true;">
+                        <button x-show="showButtons || isMobile" class="btn btn-link p-0 mx-1" @click="editing = true;">
                             <i class="bi bi-pencil"></i>
                         </button>
 
                         <!-- Delete button -->
-                        <button class="btn btn-link p-0 mx-1" x-init="htmx.process($el)"
+                        <button x-show="showButtons || isMobile" class="btn btn-link p-0 mx-1" x-init="htmx.process($el)"
                                 :hx-delete="`/projects/${project.id}/tasks/${task.id}/`"
                                 @htmx:after-request="if (event.detail.successful) {
                                     tasks.splice(index, 1);

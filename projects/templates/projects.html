@@ -22,7 +22,11 @@
             <div class="d-flex flex-column gap-2">
                 <template x-for="(project, index) in projects" :key="project.id">
                     <div class="card shadow-sm border-0 p-0 flex-grow-1"
-                         x-data="{ expanded: true, editing: false, tempName: project.name, originalName: project.name }"
+                         x-data="{ expanded: true, editing: false, tempName: project.name, originalName: project.name, showButtons: false,
+                                   isMobile: window.matchMedia('(max-width: 991px)').matches}"
+                         x-init="window.addEventListener('resize', () => isMobile = window.matchMedia('(max-width: 992px)').matches)"
+                         @mouseenter="showButtons = true"
+                         @mouseleave="showButtons = false"
                          @click.away="
                                     // When clicking outside, save changes if the name was modified
                                     editing = false;
@@ -58,18 +62,18 @@
 
                                 <div class="d-flex gap-2 ms-auto">
                                     <!-- Toggle expand/collapse -->
-                                    <button @click="expanded = !expanded" class="btn btn-link p-0 mx-1">
+                                    <button x-show="showButtons || isMobile" @click="expanded = !expanded" class="btn btn-link p-0 mx-1">
                                         <i :class="expanded ? 'bi bi-chevron-up' : 'bi bi-chevron-down'"></i>
                                     </button>
 
                                     <!-- Edit button -->
-                                    <button @click.stop="editing = true"
+                                    <button x-show="showButtons || isMobile" @click.stop="editing = true"
                                             class="btn btn-link p-0 mx-1">
                                         <i class="bi bi-pencil"></i>
                                     </button>
 
                                     <!-- Delete button -->
-                                    <button @click="htmx.ajax('DELETE', `/projects/${project.id}/`, {
+                                    <button x-show="showButtons || isMobile" @click="htmx.ajax('DELETE', `/projects/${project.id}/`, {
                                                     target: `#project-${project.id}`,
                                                     swap: 'outerHTML' })"
                                             class="btn btn-link p-0 mx-1">

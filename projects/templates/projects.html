@@ -14,7 +14,8 @@
                 <input type="text" name="name" class="form-control"
                        placeholder="Введіть назву проєкту" required
                        pattern="^(?!\s*$).+"
-                       oninvalid="this.setCustomValidity('Введіть коректне ім\'я проекту');">
+                       oninvalid="this.setCustomValidity('Введіть коректне ім\'я проекту');"
+                       oninput="this.setCustomValidity('');">
                 <button type="submit" class="btn btn-primary">Створити</button>
             </form>
 
